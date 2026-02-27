@@ -23,10 +23,16 @@ updates a =-latest.json= symlink, and optionally runs a per-target hook.
 
 * Installation
 
-The repository already includes =bb.edn= with dependencies. Make the script executable:
+Install with [[https://github.com/babashka/bbin][bbin]]:
 
 #+begin_src sh
-chmod +x url-tracker
+bbin install io.github.200ok-ch/url-tracker
+#+end_src
+
+After that, run it from anywhere:
+
+#+begin_src sh
+url-tracker --help
 #+end_src
 
 * Usage
