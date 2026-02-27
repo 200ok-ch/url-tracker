@@ -97,6 +97,20 @@ You can still run a single target directly from CLI:
   --hook "./on-change.sh"
 #+end_src
 
+* Run as a Cron Job
+
+For periodic tracking, run =url-tracker= from =cron=. This example runs every 15 minutes and writes logs to a file:
+
+#+begin_src cron
+*/15 * * * * cd /path/to/project && /usr/local/bin/url-tracker >> /var/log/url-tracker.log 2>&1
+#+end_src
+
+Tips:
+
+- Use absolute paths for both =url-tracker= and log files.
+- If you rely on =url-tracker.yml= in the project directory, keep the =cd /path/to/project && ...= part.
+- Edit crontab with =crontab -e= and confirm with =crontab -l=.
+
 * Hook Contract
 
 If =hook= is set for a target and a new version is created, the command is executed.
