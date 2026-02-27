@@ -1,0 +1,118 @@
+* url-tracker
+
+Track versioned snapshots of URL content with Babashka.
+
+When fetched content changes, =url-tracker= writes a new snapshot file,
+updates a =-latest.json= symlink, and optionally runs a per-target hook.
+
+* Features
+
+- Versioned JSON snapshots with UTC timestamped filenames
+- Change detection (no new file if content is unchanged)
+- Multiple targets via config file
+- Per-target hook command on updates
+- Hook environment includes both old and new snapshot paths:
+  - =OLD= (previous snapshot, empty on first version)
+  - =NEW= (newly created snapshot)
+- Configurable with [[https://github.com/200ok-ch/shell-smith][shell-smith]] (CLI, env vars, YAML)
+
+* Requirements
+
+- [[https://github.com/babashka/babashka][Babashka]] (=bb=)
+- =curl=
+
+* Installation
+
+The repository already includes =bb.edn= with dependencies. Make the script executable:
+
+#+begin_src sh
+chmod +x url-tracker
+#+end_src
+
+* Usage
+
+#+begin_src text
+url-tracker [--url <url> --directory <directory> --prefix <prefix> --hook <command>] [--dry-run]
+url-tracker (-h | --help)
+#+end_src
+
+Options:
+
+- =--url <url>=: URL to fetch
+- =--directory <directory>=: where snapshots are stored
+- =--prefix <prefix>=: filename prefix
+- =--hook <command>=: command run when a new version is detected
+- =--dry-run=: print actions without writing files
+
+* Snapshot Naming
+
+New snapshots are written as:
+
+#+begin_src text
+<directory>/<prefix>-<UTC_TIMESTAMP>-v<version>.json
+#+end_src
+
+Example:
+
+#+begin_src text
+snapshots/api/api-20260227T092214Z-v2.json
+#+end_src
+
+Latest symlink:
+
+#+begin_src text
+<directory>/<prefix>-latest.json
+#+end_src
+
+* Configuration
+
+Create =url-tracker.yml= in the working directory to define multiple targets.
+
+#+begin_src yaml
+targets:
+  - url: https://example.com/a.json
+    directory: snapshots/a
+    prefix: a
+    hook: ./notify-a.sh
+
+  - url: https://example.com/b.json
+    directory: snapshots/b
+    prefix: b
+    hook: ./notify-b.sh
+#+end_src
+
+You can still run a single target directly from CLI:
+
+#+begin_src sh
+./url-tracker \
+  --url "https://example.com/data.json" \
+  --directory "snapshots/data" \
+  --prefix "data" \
+  --hook "./on-change.sh"
+#+end_src
+
+* Hook Contract
+
+If =hook= is set for a target and a new version is created, the command is executed.
+
+Environment variables available to the hook:
+
+- =OLD=: previous snapshot path (empty on first snapshot)
+- =NEW=: new snapshot path
+- =TRACK_URL_URL=: target URL
+- =TRACK_URL_DIRECTORY=: target directory
+- =TRACK_URL_PREFIX=: target prefix
+- =TRACK_URL_NEW_FILE=: new snapshot path (same value as =NEW=)
+- =TRACK_URL_NEW_VERSION=: numeric version
+
+Example hook command:
+
+#+begin_src sh
+--hook "sh -c 'diff -u "$OLD" "$NEW" || true'"
+#+end_src
+
+* Notes
+
+- On first run for a target, version starts at =v1=.
+- If fetched content is unchanged from =<prefix>-latest.json=, no new snapshot is created.
+- Use =--dry-run= to verify config and target processing without writing files.
