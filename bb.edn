@@ -1,3 +1,4 @@
-{:deps {io.github.200ok-ch/shell-smith
+{:paths ["."]
+ :deps {io.github.200ok-ch/shell-smith
         {:git/sha "7f9b74669ce2eabaed6dfba5ba7ed9ec449296a5"}}
  :bbin/bin {url-tracker {:main-opts ["-m" "url-tracker"]}}}
