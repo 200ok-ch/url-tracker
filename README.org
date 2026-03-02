@@ -38,7 +38,8 @@ url-tracker --help
 * Usage
 
 #+begin_src text
-url-tracker [--url <url> --directory <directory> --prefix <prefix> --hook <command>] [--dry-run]
+url-tracker <config-file> [--dry-run] [--verbose]
+url-tracker [--url <url> --directory <directory> --prefix <prefix> --hook <command>] [--dry-run] [--verbose]
 url-tracker (-h | --help)
 #+end_src
 
@@ -49,6 +50,16 @@ Options:
 - =--prefix <prefix>=: filename prefix
 - =--hook <command>=: command run when a new version is detected
 - =--dry-run=: print actions without writing files
+- =-v=, =--verbose=: print detailed progress (URL, latest snapshot, fetch time)
+
+You can also pass a config file path positionally:
+
+#+begin_src sh
+url-tracker ./configs/url-tracker.yml
+#+end_src
+
+In positional config-file mode, targets without =directory= default to the
+directory that contains the config file.
 
 * Snapshot Naming
 
@@ -97,6 +108,12 @@ You can still run a single target directly from CLI:
   --hook "./on-change.sh"
 #+end_src
 
+If your config is not in the current working directory, pass its path directly:
+
+#+begin_src sh
+url-tracker /path/to/url-tracker.yml
+#+end_src
+
 * Run as a Cron Job
 
 For periodic tracking, run =url-tracker= from =cron=. This example runs every 15 minutes and writes logs to a file:
@@ -113,22 +130,23 @@ Tips:
 
 * Hook Contract
 
-If =hook= is set for a target and a new version is created, the command is executed.
+If =hook= is set for a target and a new version is created, the command is executed with =bash -lc=.
 
 Environment variables available to the hook:
 
-- =OLD=: previous snapshot path (empty on first snapshot)
-- =NEW=: new snapshot path
+- =OLD_FILE=: previous snapshot path (empty on first snapshot)
+- =NEW_FILE=: new snapshot path
 - =TRACK_URL_URL=: target URL
 - =TRACK_URL_DIRECTORY=: target directory
 - =TRACK_URL_PREFIX=: target prefix
-- =TRACK_URL_NEW_FILE=: new snapshot path (same value as =NEW=)
-- =TRACK_URL_NEW_VERSION=: numeric version
+- =TRACK_URL_NEW_FILE=: new snapshot path (same value as =NEW_FILE=)
+- =OLD_VERSION=: previous numeric version (=0= on first snapshot)
+- =NEW_VERSION=: new numeric version
 
 Example hook command:
 
 #+begin_src sh
---hook "sh -c 'diff -u "$OLD" "$NEW" || true'"
+--hook "sh -c 'diff -u "$OLD_FILE" "$NEW_FILE" || true'"
 #+end_src
 
 * Notes
