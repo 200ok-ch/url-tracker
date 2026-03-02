@@ -50,7 +50,7 @@ Options:
 - =--prefix <prefix>=: filename prefix
 - =--hook <command>=: command run when a new version is detected
 - =--dry-run=: print actions without writing files
-- =-v=, =--verbose=: print detailed progress (URL, latest snapshot, fetch time)
+- =-v=, =--verbose=: print detailed progress (URL, latest snapshot, fetch time, hook command, hook env)
 
 You can also pass a config file path positionally:
 

@@ -95,7 +95,13 @@ Configuration file (url-tracker.yml) supports multiple targets:
              link-target
              (fs/path directory link-target))))))
 
-(defn run-command! [cmd env]
+(defn run-command! [cmd env verbose]
+  (when verbose
+    (println "[verbose] Hook command:" cmd)
+    (println "[verbose] Hook environment:"))
+  (when verbose
+    (doseq [k (sort (keys env))]
+      (println "[verbose]" k "=" (get env k))))
   (let [{:keys [exit out err]} (process/sh {:extra-env env
                                             :continue true
                                             :out :string
@@ -216,7 +222,7 @@ Configuration file (url-tracker.yml) supports multiple targets:
             (when dry-run
               (fs/delete-if-exists tmp-file))
             (if (and cmd (not (str/blank? cmd)) (not dry-run))
-              (if (run-command! cmd env)
+              (if (run-command! cmd env verbose)
                 {:status :updated
                  :url url
                  :file (str new-file)
