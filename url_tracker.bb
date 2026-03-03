@@ -266,12 +266,13 @@ Configuration file (url-tracker.yml) supports multiple targets:
         (validate-targets! targets)
         (let [results (mapv #(track-target! (assoc % :dry-run dry-run :verbose verbose)) targets)
               errors (filter #(= :error (:status %)) results)]
-          (doseq [result results]
-            (case (:status result)
-              :updated (println "Created new version:" (:file result))
-              :unchanged (println "No change detected for" (:url result))
-              :error (binding [*out* *err*]
-                       (println "Error:" (:message result)))))
+        (doseq [result results]
+          (case (:status result)
+            :updated (println "Created new version:" (:file result))
+            :unchanged (when verbose
+                         (println "No change detected for" (:url result)))
+            :error (binding [*out* *err*]
+                     (println "Error:" (:message result)))))
           (System/exit (if (seq errors) 1 0))))
       (catch Exception e
         (binding [*out* *err*]
